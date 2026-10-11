@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query, Response
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query, Response, Header
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
@@ -11,17 +11,29 @@ from app.core.config import settings
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 @router.post("", response_model=DocumentResponse)
-async def upload_medical_document(file: UploadFile = File(...)):
-    patient_id = UUID(settings.DEMO_PATIENT_ID)
+async def upload_medical_document(
+    file: UploadFile = File(...),
+    x_patient_id: Optional[str] = Header(None, alias="X-Patient-Id")
+):
+    pid_str = x_patient_id if x_patient_id else settings.DEMO_PATIENT_ID
+    try:
+        patient_id = UUID(pid_str)
+    except Exception:
+        patient_id = UUID(settings.DEMO_PATIENT_ID)
     doc = await DocumentProcessorService.upload_document(file, patient_id)
     return doc
 
 @router.get("", response_model=List[DocumentResponse])
 async def list_medical_documents(
     doc_type: Optional[str] = Query(None),
-    status: Optional[str] = Query(None)
+    status: Optional[str] = Query(None),
+    x_patient_id: Optional[str] = Header(None, alias="X-Patient-Id")
 ):
-    patient_id = UUID(settings.DEMO_PATIENT_ID)
+    pid_str = x_patient_id if x_patient_id else settings.DEMO_PATIENT_ID
+    try:
+        patient_id = UUID(pid_str)
+    except Exception:
+        patient_id = UUID(settings.DEMO_PATIENT_ID)
     docs = [d for d in store.documents.values() if d["patient_id"] == patient_id]
     if doc_type:
         docs = [d for d in docs if d.get("document_type") == doc_type]

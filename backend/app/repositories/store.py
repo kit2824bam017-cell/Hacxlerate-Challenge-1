@@ -350,5 +350,7 @@ class MemoryDataStore:
             "created_at": datetime(2026, 9, 20, 10, 0, 0),
             "updated_at": datetime(2026, 9, 20, 10, 0, 0)
         }
+from app.repositories.sqlite_store import PersistentDataStore
 
-store = MemoryDataStore()
+# Use durable SQLite-backed store matching Supabase PostgreSQL schema
+store = PersistentDataStore()

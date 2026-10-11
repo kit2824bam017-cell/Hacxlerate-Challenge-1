@@ -17,6 +17,7 @@ async def get_candidate_extraction(document_id: UUID):
     return ext
 
 @router.patch("/{document_id}/extraction", response_model=ExtractionResultResponse)
+@router.put("/{document_id}/extraction", response_model=ExtractionResultResponse)
 async def update_candidate_extraction(document_id: UUID, req: ExtractionUpdateRequest):
     ext = store.extractions.get(document_id)
     if not ext:
@@ -26,6 +27,7 @@ async def update_candidate_extraction(document_id: UUID, req: ExtractionUpdateRe
     if req.review_status:
         ext["review_status"] = req.review_status
     ext["updated_at"] = datetime.now()
+    store.extractions[document_id] = ext
     return ext
 
 @router.post("/{document_id}/confirm")

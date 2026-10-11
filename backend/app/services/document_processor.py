@@ -108,6 +108,7 @@ class DocumentProcessorService:
             # Mark document as awaiting user review
             doc["processing_status"] = "awaiting_review"
             doc["updated_at"] = datetime.now()
+            store.documents[document_id] = doc
             
             # Pre-generate plain-language evidence-grounded summary
             await generate_evidence_grounded_summary(document_id, candidate_data)
@@ -118,6 +119,7 @@ class DocumentProcessorService:
             doc["processing_status"] = "failed"
             doc["error_message"] = str(e)
             doc["updated_at"] = datetime.now()
+            store.documents[document_id] = doc
             raise HTTPException(status_code=500, detail=f"Document processing failed: {str(e)}")
 
     @staticmethod
@@ -180,6 +182,8 @@ class DocumentProcessorService:
         ext["validation_status"] = "high_confidence"
         doc["processing_status"] = "completed"
         doc["updated_at"] = datetime.now()
+        store.extractions[document_id] = ext
+        store.documents[document_id] = doc
         
         return {
             "status": "confirmed",
